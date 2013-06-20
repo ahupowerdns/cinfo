@@ -91,7 +91,8 @@ void dototals()
 void dofile(char *fname)
 {
 	unsigned long  p; 
-	int i, num_pages;
+	int i;
+	size_t num_pages;
 	int fd;
 
 	unsigned char *map;
@@ -110,6 +111,11 @@ void dofile(char *fname)
 	}
 
 	fsize=filesize(fd);
+
+	if (fsize == 0) {
+		error("File size 0 cannot have any cached pages\n");
+		return;
+	}
 
 	p=(unsigned long)mmap(0, fsize, PROT_READ, MAP_SHARED, fd,0);
 	
@@ -151,7 +157,7 @@ void dofile(char *fname)
 				num_incore++;
 		}
 		
-		printf("%u pages, %u pages cached (%.2f%%)\n",
+		printf("%zu pages, %u pages cached (%.2f%%)\n",
 		       num_pages,
 		       num_incore,
 		       num_pages ? (num_incore*100.00)/num_pages : 0);
