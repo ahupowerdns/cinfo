@@ -183,7 +183,7 @@ void dofile(char *fname)
 
 			if((int)(i/leap)>last_pos) {
 				int proc=3.0*num_incore/leap_pages;
-				char c;
+				char c='?';
 
 				last_pos=i/leap;
 
