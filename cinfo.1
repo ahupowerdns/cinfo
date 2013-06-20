@@ -1,0 +1,48 @@
+.TH CINFO "1" "June 2001" "cinfo 0.1" "bert hubert "
+.SH NAME
+cinfo \- display information on the cacheing state of a file
+.SH SYNOPSIS
+.B cinfo [options] [filenames]
+.SH DESCRIPTION
+.\" Add any additional description here
+.PP
+Query the kernel for how much of a file is already cached in memory. In
+order to do this, the invoking user needs to have read access to a file.
+
+.TP
+\fB\-b\fR, \fB\-\-bar\fR
+output a screen-wide bar of cache information
+.TP
+\fB\-d\fR, \fB\-\-dump\fR
+output vector describing cache state of all pages
+
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+print a helpful message
+
+.TP
+\fB\-s\fR, \fB\-\-stats\fR
+output only statistics per file
+
+.TP
+\fB\-t\fR, \fB\-\-totals\fR
+output totals of all files
+
+
+
+.SH EXAMPLE
+$ cinfo /lib/libc.so.6
+.br
+/lib/libc.so.6: 275 pages, 275 pages in core (100.00%)
+.SH BUGS
+Does not work on large files (>2G) yet. Currently mmap()s the whole file
+which may upset your memory management.
+.SH AUTHOR
+Written by bert hubert <ahu@ds9a.nl>
+.SH "REPORTING BUGS"
+Report bugs to <ahu@ds9a.nl>.
+.SH COPYRIGHT
+Copyright \(co 2001 bert hubert
+.br
+This is free software; see the source for copying conditions.  There is NO
+warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

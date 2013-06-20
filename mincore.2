@@ -1,0 +1,109 @@
+.\" Hey Emacs! This file is -*- nroff -*- source.
+.\"
+.\" Copyright (C) 2001 Andries Brouwer (aeb@cwi.nl)
+.\"
+.\" Permission is granted to make and distribute verbatim copies of this
+.\" manual provided the copyright notice and this permission notice are
+.\" preserved on all copies.
+.\"
+.\" Permission is granted to copy and distribute modified versions of this
+.\" manual under the conditions for verbatim copying, provided that the
+.\" entire resulting derived work is distributed under the terms of a
+.\" permission notice identical to this one
+.\" 
+.\" Since the Linux kernel and libraries are constantly changing, this
+.\" manual page may be incorrect or out-of-date.  The author(s) assume no
+.\" responsibility for errors or omissions, or for damages resulting from
+.\" the use of the information contained herein.  The author(s) may not
+.\" have taken the same level of care in the production of this manual,
+.\" which is licensed free of charge, as they might when working
+.\" professionally.
+.\" 
+.\" Formatted or processed versions of this manual, if unaccompanied by
+.\" the source, must acknowledge the copyright and authors of this work.
+.\"
+.\" Created Sun Jun 3 17:23:32 2001 by bert hubert <ahu@ds9a.nl>
+.\"
+.TH MINCORE 2 "3 June 2001" "Linux 2.4.5" "Linux Programmer's Manual"
+.SH NAME
+mincore \- get information on whether pages are in core
+.SH SYNOPSIS
+.B #include <unistd.h>
+.br
+.B #include <sys/mman.h>
+.sp
+.BI "int mincore(void *" start ", size_t " length ", unsigned char * " vec );
+.SH DESCRIPTION
+The
+.B mincore
+function requests a vector describing which pages of a file are in core and
+can be read without disk access. The kernel will supply data for
+.I length
+bytes following the 
+.I start
+address. On return, the kernel will have filled
+.I vec
+with bytes, of which the least significant bit indicates if a page is 
+core resident.
+
+For
+.B mincore
+to return succesfully, 
+.I start
+must lie on a page boundary. It is the caller's responsibility to round up to the nearest page. The
+.I length
+parameter need not be a multiple of the page size. The vector
+.I vec
+must be large enough to contain length/PAGE_SIZE bytes.
+
+.SH "RETURN VALUE"
+On success,
+.B mincore
+returns zero.
+On error, \-1 is returned, and
+.I errno
+is set appropriately.
+.SH ERRORS
+.B EAGAIN
+kernel is temporarily out of resources
+.TP
+.B EINVAL
+.i start
+is not a multiple of PAGE_CACHE_SIZE (PAGE_SIZE) or 
+.i len
+has a non-positive value
+.TP
+.B EFAULT
+.I vec
+points to an illegal address
+.TP
+.B ENOMEM
+.I address
+to
+.I address
++
+.I length
+contained unmapped memory, or memory not part of a file.
+
+.SH "BUGS"
+.B mincore
+should return a bit vector and not a byte vector. As of Linux 2.4.5, it is not
+possible to gain information on the core residency of pages which are not backed by a file. 
+In other words, calling 
+.B mincore
+on an region returned by an anonymous
+.B mmap(2)
+does not work and sets errno to ENOMEM. Unless pages are locked in memory, the contents of
+.I vec
+may be stale by the time they reach userspace.
+
+.SH "CONFORMING TO"
+.B mincore
+does not appear to be part of POSIX or the Single Unix Specification. 
+.SH HISTORY
+The mincore() function first appeared in 4.4BSD
+
+.SH "SEE ALSO"
+.BR getpagesize (2),
+.BR mmap (2)
+

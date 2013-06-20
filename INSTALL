@@ -1,0 +1,6 @@
+Run ./configure, make and then as root, make install.
+
+For compiling, you need GNU getopt. Under Linux this is integrated in libc
+and therefore always available. For FreeBSD, install the 'libgnugetopt'
+port.
+

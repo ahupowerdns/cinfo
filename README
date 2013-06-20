@@ -1,0 +1,54 @@
+WARNING:
+	THIS CODE IS VERY NEW AND UNSTABLE - IT MAY EAT DATA! 
+	ONLY RUN ON COMPUTERS WHICH MAY CRASH WITHOUT HARM!
+
+	READ BUGS+TODO!
+
+How it works
+------------
+
+On a 2.4 Linux, do:
+
+$ ./configure
+$ make
+# make install
+# insmod ./cacheinfo.o
+# mkdir /cacheinfo 
+# mount none /cacheinfo -t cinfofs
+$ cinfo /lib/libc.so.6
+/lib/libc.so.6: 182 of 272 (66.91%) pages in the cache, of which 0 (0.00%) are dirty
+
+The cacheinfo project
+---------------------
+
+The goal of this project is to provide users with more information on the
+contents of the various caches of their kernel. Having more information may
+be useful to:
+	
+	- determine if adding more memory is useful
+
+	- see if the cache is functioning as it should
+
+	- find out if your files on the server are being cached or if other
+	  files are deemed more important
+
+It is suspected that better awareness of caches will improve people's
+ability to build and maintain high performance servers and kernels.
+
+What's there already
+--------------------
+
+A Linux 2.4 kernel module, cacheinfo.o which provides the cinfofs
+filesystem. This filesystem acts as a gateway between the page cache, the
+kernel and userspace. 
+
+A small tool, cinfo, which queries this filesystem, if mounted on
+/cacheinfo for information on a file.
+
+Read the fine cinfo manpage for more information!
+
+State of the project
+--------------------
+
+It is still very very early. Please help.
+
