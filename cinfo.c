@@ -42,7 +42,7 @@ void usage(void)
 
 }
 
-off_t filesize(fd)
+off_t filesize(int fd)
 {
 	struct stat buf;
 	if(!fstat(fd,&buf))
@@ -231,7 +231,7 @@ int main(int argc, char **argv)
 				{0, 0, 0, 0}
 			};
 		
-		c = getopt_long (argc, argv, "h",
+		c = getopt_long (argc, argv, "bdsht",
 				 long_options, &option_index);
 		if (c == -1)
 			break;
