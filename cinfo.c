@@ -36,6 +36,7 @@ void usage(void)
 	fprintf(stderr,"options:\n");
 	fprintf(stderr,"\t--bar, -b\toutput a screen-wide bar of cache information\n");
 	fprintf(stderr,"\t--dump, -d\toutput vector describing cache state of all pages\n");
+	fprintf(stderr,"\t--evict, -e\tevict file from page cache and show remaining pages\n");
 	fprintf(stderr,"\t--help, -h\tprint this helpful message\n");
 	fprintf(stderr,"\t--stats, -s\toutput only statistics\n");
 	fprintf(stderr,"\t--totals, -t\toutput totals of all files\n");
@@ -74,6 +75,7 @@ int notregular(char *fname)
 
 
 int do_bar;
+int do_evict;
 int do_stats;
 int do_dump;
 int do_totals;
@@ -115,6 +117,13 @@ void dofile(char *fname)
 	if (fsize == 0) {
 		error("File size 0 cannot have any cached pages\n");
 		return;
+	}
+
+	if (do_evict) {
+		if((errno=posix_fadvise(fd, 0, fsize, POSIX_FADV_DONTNEED))) {
+			error("posix_fadvise returned %s\n", strerror(errno));
+			return;
+		}
 	}
 
 	p=(unsigned long)mmap(0, fsize, PROT_READ, MAP_SHARED, fd,0);
@@ -225,13 +234,14 @@ int main(int argc, char **argv)
 			{
 				{"bar",0,0,'b'},
 				{"dump",0,0,'d'},
+				{"evict",0,0,'e'},
 				{"stats",0,0,'s'},
 				{"help", 0, 0, 'h'},
 				{"totals",0,0,'t'},
 				{0, 0, 0, 0}
 			};
 		
-		c = getopt_long (argc, argv, "bdsht",
+		c = getopt_long (argc, argv, "bdesht",
 				 long_options, &option_index);
 		if (c == -1)
 			break;
@@ -244,6 +254,9 @@ int main(int argc, char **argv)
 			break;
 		case 'd':
 			do_dump=1;do_stats=0;
+			break;
+		case 'e':
+			do_evict=1;
 			break;
 		case 's':
 			do_stats=1;
