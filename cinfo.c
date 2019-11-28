@@ -66,7 +66,7 @@ void die(char *format, ...)
 {
 	fflush(stdout);
 	error(format);
-	exit(0);
+	exit(1);
 }
 
 int notregular(char *fname)
@@ -277,8 +277,7 @@ int main(int argc, char **argv)
 			break;
 		case 'f':
 			if (!(file_list = strdup(optarg))) {
-				printf("Unable to allocate file_list %s\n", strerror(errno));
-				exit(1);
+				die("Unable to allocate file_list %s\n", strerror(errno));
 			}
 			break;
 		case 'h':
@@ -315,8 +314,7 @@ int main(int argc, char **argv)
 
 		if (strcmp(file_list, "-")) { 
 			if (!(f = fopen(file_list, "r"))) {
-				printf("failed to open file %s\n", strerror(errno));
-				exit(1);
+				die("Failed to open file %s\n", strerror(errno));
 			}
 		} else {
 			f = stdin;
