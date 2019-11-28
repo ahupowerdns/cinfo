@@ -35,14 +35,14 @@ void usage(void)
 {
 	fprintf(stderr,"syntax:\n\tcinfo [options] [filenames]\n");
 	fprintf(stderr,"options:\n");
-	fprintf(stderr,"\t--bar, -b\toutput a screen-wide bar of cache information\n");
-	fprintf(stderr,"\t--dump, -d\toutput vector describing cache state of all pages\n");
-	fprintf(stderr,"\t--evict, -e\tevict file from page cache and show remaining pages\n");
-	fprintf(stderr,"\t--file, -f\tfile of files or - to read from stdin\n");
-	fprintf(stderr,"\t--help, -h\tprint this helpful message\n");
-	fprintf(stderr,"\t--leave, -l\tleave the last page cached\n");
-	fprintf(stderr,"\t--stats, -s\toutput only statistics\n");
-	fprintf(stderr,"\t--totals, -t\toutput totals of all files\n");
+	fprintf(stderr,"\t-b --bar\toutput a screen-wide bar of cache information\n");
+	fprintf(stderr,"\t-d --dump\toutput vector describing cache state of all pages\n");
+	fprintf(stderr,"\t-e --evict\tevict file from page cache and show remaining pages\n");
+	fprintf(stderr,"\t-f --file\tfile of files or - to read from stdin\n");
+	fprintf(stderr,"\t-h --help\tprint this helpful message\n");
+	fprintf(stderr,"\t-l --leave\tleave the last page cached\n");
+	fprintf(stderr,"\t-s --stats\toutput only statistics\n");
+	fprintf(stderr,"\t-t --totals\toutput totals of all files\n");
 
 }
 
