@@ -238,8 +238,8 @@ int main(int argc, char **argv)
 	do_stats=1; // default
 
 	if(argc==1) {
-	  usage();
-	  exit(0);
+		usage();
+		exit(1);
 	}
 
 	while (1)
@@ -247,15 +247,15 @@ int main(int argc, char **argv)
 		int option_index = 0;
 		static struct option long_options[] =
 			{
-				{"bar",0,0,'b'},
-				{"dump",0,0,'d'},
-				{"evict",0,0,'e'},
-				{"file",1,0,'f'},
-				{"help", 0, 0, 'h'},
-				{"leave", 0, 0, 'l'},
-				{"stats",0,0,'s'},
-				{"totals",0,0,'t'},
-				{0, 0, 0, 0}
+				{"bar"    ,0,0,'b'},
+				{"dump"   ,0,0,'d'},
+				{"evict"  ,0,0,'e'},
+				{"file"   ,1,0,'f'},
+				{"help"   ,0,0,'h'},
+				{"leave"  ,0,0,'l'},
+				{"stats"  ,0,0,'s'},
+				{"totals" ,0,0,'t'},
+				{0,0,0,0}
 			};
 		
 		c = getopt_long (argc, argv, "bdef:shlt",
@@ -299,14 +299,13 @@ int main(int argc, char **argv)
 			break;
 		}
 	}
-	
+
 	setpagevalues();
-	
-	if(optind==argc && !file_list) {
-	  usage();
-	  exit(0);
+
+	if ( optind == argc && !file_list) {
+		usage();
+		exit(0);
 	}
-	
 
 	if (file_list) {
 		FILE *f;
@@ -330,12 +329,12 @@ int main(int argc, char **argv)
 		}
 
 	} else {
-		while(optind<argc)
+		while (optind < argc)
 			dofile(argv[optind++]);
 	}
 
-	if(do_totals)
-	  dototals();
+	if (do_totals)
+		dototals();
 
 	return 1;
 }
