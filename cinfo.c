@@ -38,6 +38,7 @@ void usage(void)
 	fprintf(stderr,"\t--dump, -d\toutput vector describing cache state of all pages\n");
 	fprintf(stderr,"\t--evict, -e\tevict file from page cache and show remaining pages\n");
 	fprintf(stderr,"\t--help, -h\tprint this helpful message\n");
+    fprintf(stderr,"\t--leave, -l\tleave the last page cached\n");
 	fprintf(stderr,"\t--stats, -s\toutput only statistics\n");
 	fprintf(stderr,"\t--totals, -t\toutput totals of all files\n");
 
@@ -76,6 +77,7 @@ int notregular(char *fname)
 
 int do_bar;
 int do_evict;
+int do_leave;
 int do_stats;
 int do_dump;
 int do_totals;
@@ -98,7 +100,7 @@ void dofile(char *fname)
 	int fd;
 
 	unsigned char *map;
-	off_t fsize;
+	off_t fsize, uncache_size;
 
 	if(notregular(fname))
 		return;
@@ -113,14 +115,19 @@ void dofile(char *fname)
 	}
 
 	fsize=filesize(fd);
+    uncache_size = fsize;
 
 	if (fsize == 0) {
 		error("File size 0 cannot have any cached pages\n");
 		return;
 	}
 
+    if (do_leave) {
+        uncache_size -= page_size;
+    }
+
 	if (do_evict) {
-		if((errno=posix_fadvise(fd, 0, fsize, POSIX_FADV_DONTNEED))) {
+		if((errno=posix_fadvise(fd, 0, uncache_size, POSIX_FADV_DONTNEED))) {
 			error("posix_fadvise returned %s\n", strerror(errno));
 			return;
 		}
@@ -235,13 +242,14 @@ int main(int argc, char **argv)
 				{"bar",0,0,'b'},
 				{"dump",0,0,'d'},
 				{"evict",0,0,'e'},
-				{"stats",0,0,'s'},
 				{"help", 0, 0, 'h'},
+                {"leave", 0, 0, 'l'},
+				{"stats",0,0,'s'},
 				{"totals",0,0,'t'},
 				{0, 0, 0, 0}
 			};
 		
-		c = getopt_long (argc, argv, "bdesht",
+		c = getopt_long (argc, argv, "bdeshlt",
 				 long_options, &option_index);
 		if (c == -1)
 			break;
@@ -258,17 +266,18 @@ int main(int argc, char **argv)
 		case 'e':
 			do_evict=1;
 			break;
-		case 's':
-			do_stats=1;
-			break;
-
-		case 't':
-			do_totals=1;
-			break;
-
 		case 'h':
 			usage();
 			exit(0);
+			break;
+        case 'l':
+            do_leave=1;
+            break;
+		case 's':
+			do_stats=1;
+			break;
+		case 't':
+			do_totals=1;
 			break;
 			
 		default:
