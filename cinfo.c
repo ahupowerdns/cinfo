@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <errno.h>
 #include <string.h>
+#include <limits.h>
 
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -37,8 +38,9 @@ void usage(void)
 	fprintf(stderr,"\t--bar, -b\toutput a screen-wide bar of cache information\n");
 	fprintf(stderr,"\t--dump, -d\toutput vector describing cache state of all pages\n");
 	fprintf(stderr,"\t--evict, -e\tevict file from page cache and show remaining pages\n");
+	fprintf(stderr,"\t--file, -f\tfile of files or - to read from stdin\n");
 	fprintf(stderr,"\t--help, -h\tprint this helpful message\n");
-    fprintf(stderr,"\t--leave, -l\tleave the last page cached\n");
+	fprintf(stderr,"\t--leave, -l\tleave the last page cached\n");
 	fprintf(stderr,"\t--stats, -s\toutput only statistics\n");
 	fprintf(stderr,"\t--totals, -t\toutput totals of all files\n");
 
@@ -87,9 +89,9 @@ long long total_cached;
 void dototals()
 {
 	printf("\nTotals: %llu pages, %llu cached (%.2f%%)\n",
-	       total_pages,
-	       total_cached,
-	       total_cached*100.0/total_pages);
+		   total_pages,
+		   total_cached,
+		   total_cached*100.0/total_pages);
 }
 
 void dofile(char *fname)
@@ -115,20 +117,22 @@ void dofile(char *fname)
 	}
 
 	fsize=filesize(fd);
-    uncache_size = fsize;
+	uncache_size = fsize;
 
 	if (fsize == 0) {
 		error("File size 0 cannot have any cached pages\n");
+		close(fd);
 		return;
 	}
 
-    if (do_leave) {
-        uncache_size -= page_size;
-    }
+	if (do_leave) {
+		uncache_size -= page_size;
+	}
 
 	if (do_evict) {
 		if((errno=posix_fadvise(fd, 0, uncache_size, POSIX_FADV_DONTNEED))) {
 			error("posix_fadvise returned %s\n", strerror(errno));
+			close(fd);
 			return;
 		}
 	}
@@ -137,6 +141,7 @@ void dofile(char *fname)
 	
 	if(p==-1) {
 		error("mmap returned error: %s\n",strerror(errno));
+		close(fd);
 		return;
 	}
 	
@@ -174,9 +179,9 @@ void dofile(char *fname)
 		}
 		
 		printf("%zu pages, %u pages cached (%.2f%%)\n",
-		       num_pages,
-		       num_incore,
-		       num_pages ? (num_incore*100.00)/num_pages : 0);
+			   num_pages,
+			   num_incore,
+			   num_pages ? (num_incore*100.00)/num_pages : 0);
 	}
 	else if(do_bar)
 	{
@@ -220,12 +225,15 @@ void dofile(char *fname)
 		
 	}
 	munmap((void *)p, num_pages*page_size);
+	free(map);
+	close(fd);
 
 }	
 
 int main(int argc, char **argv)
 {
 	char c;
+	char *file_list = NULL;
 
 	do_stats=1; // default
 
@@ -242,14 +250,15 @@ int main(int argc, char **argv)
 				{"bar",0,0,'b'},
 				{"dump",0,0,'d'},
 				{"evict",0,0,'e'},
+				{"file",1,0,'f'},
 				{"help", 0, 0, 'h'},
-                {"leave", 0, 0, 'l'},
+				{"leave", 0, 0, 'l'},
 				{"stats",0,0,'s'},
 				{"totals",0,0,'t'},
 				{0, 0, 0, 0}
 			};
 		
-		c = getopt_long (argc, argv, "bdeshlt",
+		c = getopt_long (argc, argv, "bdef:shlt",
 				 long_options, &option_index);
 		if (c == -1)
 			break;
@@ -266,13 +275,19 @@ int main(int argc, char **argv)
 		case 'e':
 			do_evict=1;
 			break;
+		case 'f':
+			if (!(file_list = strdup(optarg))) {
+				printf("Unable to allocate file_list %s\n", strerror(errno));
+				exit(1);
+			}
+			break;
 		case 'h':
 			usage();
 			exit(0);
 			break;
-        case 'l':
-            do_leave=1;
-            break;
+		case 'l':
+			do_leave=1;
+			break;
 		case 's':
 			do_stats=1;
 			break;
@@ -288,13 +303,38 @@ int main(int argc, char **argv)
 	
 	setpagevalues();
 	
-	if(optind==argc) {
+	if(optind==argc && !file_list) {
 	  usage();
 	  exit(0);
 	}
 	
-	while(optind<argc)
-		dofile(argv[optind++]);
+
+	if (file_list) {
+		FILE *f;
+		char fname[PATH_MAX];
+
+		if (strcmp(file_list, "-")) { 
+			if (!(f = fopen(file_list, "r"))) {
+				printf("failed to open file %s\n", strerror(errno));
+				exit(1);
+			}
+		} else {
+			f = stdin;
+		}
+
+		while (fgets(fname, PATH_MAX, f)) {
+			char *newline; 
+
+			if ((newline = strchr(fname, '\n')))
+				newline[0] = 0;
+
+			dofile(fname);
+		}
+
+	} else {
+		while(optind<argc)
+			dofile(argv[optind++]);
+	}
 
 	if(do_totals)
 	  dototals();
