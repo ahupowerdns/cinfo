@@ -126,7 +126,11 @@ void dofile(char *fname)
 	}
 
 	if (do_leave) {
-		uncache_size -= page_size;
+		if (fsize % page_size) {
+			uncache_size = fsize - (fsize % page_size);
+		} else{
+			uncache_size = fsize - page_size; 
+		}
 	}
 
 	if (do_evict) {
