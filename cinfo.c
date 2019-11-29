@@ -100,6 +100,7 @@ void dofile(char *fname)
 	int i;
 	size_t num_pages;
 	int fd;
+	int skip_evict = 0;
 
 	unsigned char *map;
 	off_t fsize, uncache_size;
@@ -131,9 +132,12 @@ void dofile(char *fname)
 		} else{
 			uncache_size = fsize - page_size; 
 		}
+
+		if (uncache_size < page_size)
+			skip_evict = 1;
 	}
 
-	if (do_evict) {
+	if (do_evict && !skip_evict) {
 		if((errno=posix_fadvise(fd, 0, uncache_size, POSIX_FADV_DONTNEED))) {
 			error("posix_fadvise returned %s\n", strerror(errno));
 			close(fd);
