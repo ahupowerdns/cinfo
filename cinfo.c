@@ -72,8 +72,10 @@ void die(char *format, ...)
 int notregular(char *fname)
 {
 	struct stat buf;
-	stat(fname, &buf);
-	return (!S_ISREG(buf.st_mode));
+	if (stat(fname, &buf) == -1)
+		return -1;
+	else
+		return (!S_ISREG(buf.st_mode));
 }
 
 
@@ -327,6 +329,8 @@ int main(int argc, char **argv)
 			f = stdin;
 		}
 
+		free(file_list);
+
 		while (fgets(fname, PATH_MAX, f)) {
 			char *newline; 
 
@@ -335,6 +339,8 @@ int main(int argc, char **argv)
 
 			dofile(fname);
 		}
+
+		fclose(f);
 
 	} else {
 		while (optind < argc)
